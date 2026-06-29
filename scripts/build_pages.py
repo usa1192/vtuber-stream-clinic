@@ -14,10 +14,7 @@ def main() -> None:
 
     shutil.copy2(ROOT / "index.html", DIST / "index.html")
 
-    api_base_url = os.getenv(
-        "KARTE_API_BASE_URL",
-        "https://vtuber-stream-clinic.onrender.com",
-    ).rstrip("/")
+    api_base_url = os.getenv("KARTE_API_BASE_URL", "").rstrip("/")
     (DIST / "config.js").write_text(
         f'window.KARTE_API_BASE_URL = "{api_base_url}";\n',
         encoding="utf-8",
