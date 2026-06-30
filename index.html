@@ -245,6 +245,7 @@
     .segment:hover::after { opacity: 1; }
     .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 13px; color: var(--muted); font-size: 12px; }
     .legend i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; }
+    .timeline-note { margin: 10px 0 0; color: var(--muted); font-size: 12px; }
 
     .highlight-list, .advice-list { display: grid; gap: 10px; }
     .highlight, .advice { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; padding: 14px; background: rgba(255,255,255,.035); border: 1px solid var(--line); border-radius: 14px; }
@@ -424,20 +425,12 @@
         <div>
           <article class="panel">
             <h3>配信テンションマップ</h3>
-            <div class="timeline-labels"><span>00:00</span><span>30:00</span><span>1:00:00</span><span>1:30:00</span><span>2:00:00</span></div>
-            <div class="timeline" aria-label="配信テンションの時間推移">
-              <div class="segment" data-tip="挨拶・待機" style="width:10%;background:#4b5578"></div>
-              <div class="segment" data-tip="近況雑談" style="width:16%;background:#6576c9"></div>
-              <div class="segment" data-tip="本題開始" style="width:14%;background:#59dcff"></div>
-              <div class="segment" data-tip="ゲーム進行" style="width:22%;background:#9d7bff"></div>
-              <div class="segment" data-tip="盛り上がり" style="width:10%;background:#73f0bf"></div>
-              <div class="segment" data-tip="停滞区間" style="width:9%;background:#6c5066"></div>
-              <div class="segment" data-tip="コメント盛況" style="width:12%;background:#73f0bf"></div>
-              <div class="segment" data-tip="エンディング" style="width:7%;background:#ffd66b"></div>
-            </div>
+            <div class="timeline-labels" id="timelineLabels"></div>
+            <div class="timeline" id="tensionTimeline" aria-label="配信テンションの時間推移"></div>
             <div class="legend">
               <span><i style="background:#4b5578"></i>低密度</span><span><i style="background:#9d7bff"></i>通常</span><span><i style="background:#73f0bf"></i>盛り上がり</span><span><i style="background:#6c5066"></i>離脱注意</span>
             </div>
+            <p class="timeline-note" id="timelineNote">動画時間と切り抜き候補に合わせて表示します。</p>
           </article>
 
           <article class="panel" style="margin-top:16px">
@@ -586,6 +579,115 @@
       return parts.reduce((total, part) => total * 60 + part, 0);
     }
 
+    function formatTimelineTime(seconds) {
+      const total = Math.max(0, Math.round(Number(seconds) || 0));
+      const hours = Math.floor(total / 3600);
+      const minutes = Math.floor((total % 3600) / 60);
+      const rest = total % 60;
+      if (hours > 0) return `${hours}:${String(minutes).padStart(2, '0')}:${String(rest).padStart(2, '0')}`;
+      return `${minutes}:${String(rest).padStart(2, '0')}`;
+    }
+
+    function getTimelineDuration(data) {
+      const videoDuration = Number(data.video?.durationSeconds);
+      if (videoDuration > 0) return videoDuration;
+
+      const highlightMax = Math.max(
+        0,
+        ...(data.highlights || []).flatMap(item => [
+          parseTimeToSeconds(item.start),
+          parseTimeToSeconds(item.end)
+        ])
+      );
+      const mainStart = parseTimeToSeconds(data.mainTopicStartedAt);
+      return Math.max(7200, highlightMax + 600, mainStart + 1800);
+    }
+
+    function renderTimelineLabels(durationSeconds, hasMeasuredDuration) {
+      const labels = document.getElementById('timelineLabels');
+      labels.innerHTML = '';
+      const steps = 4;
+      for (let index = 0; index <= steps; index += 1) {
+        const label = document.createElement('span');
+        label.textContent = formatTimelineTime((durationSeconds / steps) * index);
+        labels.appendChild(label);
+      }
+      document.getElementById('timelineNote').textContent = hasMeasuredDuration
+        ? `動画の実時間 ${formatTimelineTime(durationSeconds)} に合わせて表示しています。明るい区間はGeminiの切り抜き候補です。`
+        : '動画時間を取得できなかったため、切り抜き候補の時刻から仮の横軸で表示しています。';
+    }
+
+    function renderTensionTimeline(data) {
+      const timeline = document.getElementById('tensionTimeline');
+      timeline.innerHTML = '';
+
+      const hasMeasuredDuration = Number(data.video?.durationSeconds) > 0;
+      const durationSeconds = getTimelineDuration(data);
+      renderTimelineLabels(durationSeconds, hasMeasuredDuration);
+
+      const highlightRanges = (data.highlights || []).map(item => {
+        const start = Math.min(durationSeconds, parseTimeToSeconds(item.start));
+        const rawEnd = parseTimeToSeconds(item.end);
+        const end = Math.min(durationSeconds, Math.max(rawEnd, start + 90));
+        return {
+          start,
+          end,
+          title: item.title || '盛り上がり候補',
+          tag: item.tag || 'Gemini推定'
+        };
+      }).filter(item => item.start < durationSeconds);
+
+      const ranges = [];
+      let cursor = 0;
+      highlightRanges
+        .sort((a, b) => a.start - b.start)
+        .forEach(item => {
+          if (item.start > cursor) {
+            ranges.push({
+              start: cursor,
+              end: item.start,
+              color: '#6576c9',
+              tip: `${formatTimelineTime(cursor)}〜${formatTimelineTime(item.start)} 通常区間`
+            });
+          }
+          ranges.push({
+            start: item.start,
+            end: item.end,
+            color: '#73f0bf',
+            tip: `${formatTimelineTime(item.start)}〜${formatTimelineTime(item.end)} ${item.title} / ${item.tag}`
+          });
+          cursor = Math.max(cursor, item.end);
+        });
+
+      if (cursor < durationSeconds) {
+        ranges.push({
+          start: cursor,
+          end: durationSeconds,
+          color: '#6576c9',
+          tip: `${formatTimelineTime(cursor)}〜${formatTimelineTime(durationSeconds)} 通常区間`
+        });
+      }
+
+      if (!ranges.length) {
+        ranges.push({
+          start: 0,
+          end: durationSeconds,
+          color: '#4b5578',
+          tip: '切り抜き候補がないため、全体を低密度として仮表示しています'
+        });
+      }
+
+      ranges.forEach(item => {
+        const width = Math.max(1.5, ((item.end - item.start) / durationSeconds) * 100);
+        const segment = document.createElement('div');
+        segment.className = 'segment';
+        segment.dataset.tip = item.tip;
+        segment.style.width = `${width}%`;
+        segment.style.background = item.color;
+        timeline.appendChild(segment);
+      });
+    }
+
     function buildTimestampUrl(video, timeText) {
       const base = video?.watchUrl || input.value.trim();
       const seconds = parseTimeToSeconds(timeText);
@@ -635,6 +737,7 @@
       renderTextList('goodPointList', data.goodPoints);
       renderTextList('dropOffList', data.dropOffPoints);
       renderTextList('nextActionList', data.nextActions || data.advice);
+      renderTensionTimeline(data);
 
       const highlights = document.getElementById('highlightList');
       highlights.innerHTML = '';
