@@ -326,7 +326,7 @@
     <section class="hero wrap" id="how">
       <div class="eyebrow">● VTuber配信を、感覚ではなくデータで改善</div>
       <h1><span class="gradient-text">その配信、どこで伸びて<br>どこで離脱されてる？</span></h1>
-      <p class="lead">公開YouTube動画のURLを入力すると、Geminiが冒頭30分を重点的に確認し、難しい場合は範囲を短縮しながら、トーク密度の参考点・導入速度・タイトル一致度・切り抜き候補をカルテ形式で見える化します。</p>
+      <p class="lead">公開YouTube動画のURLを入力すると、Geminiが冒頭30分を重点的に確認し、難しい場合は範囲を短縮しながら、トーク密度の参考点・OP終了の推定・タイトル一致度・切り抜き候補をカルテ形式で見える化します。</p>
 
       <form class="diagnose-box" id="diagnoseForm">
         <label for="youtubeUrl" style="position:absolute;left:-9999px">YouTubeアーカイブURL</label>
@@ -346,8 +346,8 @@
       </div>
 
       <div class="feature-row">
-        <div class="mini-card"><strong>⏱ 導入を診断</strong><span>本題へ入るまでの長さを可視化</span></div>
-        <div class="mini-card"><strong>🎙 トークを分析</strong><span>無言・発話・話題の密度を測定</span></div>
+        <div class="mini-card"><strong>⏱ OPを診断</strong><span>待機・OPが終わる推定時刻を可視化</span></div>
+        <div class="mini-card"><strong>🎙 トークを分析</strong><span>発話・話題の密度をGeminiで推定</span></div>
         <div class="mini-card"><strong>✂️ 見どころを発見</strong><span>Shorts候補の時間帯を提案</span></div>
       </div>
     </section>
@@ -401,9 +401,8 @@
 
       <div class="metrics">
         <div class="metric"><div class="metric-name">トーク密度（Gemini推定）</div><div class="metric-value"><span id="talkDensityScore">--</span><small>点</small></div><div class="meter"><span id="talkDensityMeter" style="width:0%"></span></div></div>
-        <div class="metric"><div class="metric-name">本題開始（Gemini推定）</div><div class="metric-value"><span id="mainTopicStartedAt">--:--</span></div><div class="meter"><span id="introMeter" style="width:0%;background:linear-gradient(90deg,var(--red),var(--yellow))"></span></div></div>
+        <div class="metric"><div class="metric-name">OP終了（Gemini推定）</div><div class="metric-value"><span id="mainTopicStartedAt">--:--</span></div><div class="meter"><span id="introMeter" style="width:0%;background:linear-gradient(90deg,var(--red),var(--yellow))"></span></div></div>
         <div class="metric"><div class="metric-name">タイトル一致（Gemini推定）</div><div class="metric-value"><span id="titleMatchScore">--</span><small>点</small></div><div class="meter"><span id="titleMatchMeter" style="width:0%"></span></div></div>
-        <div class="metric"><div class="metric-name">無言率（簡易音声解析）</div><div class="metric-value"><span id="silenceRate">--</span><small id="silenceUnit">%</small></div><div class="meter"><span id="silenceMeter" style="width:0%;background:linear-gradient(90deg,var(--mint),var(--cyan))"></span></div></div>
       </div>
 
       <div class="insight-grid">
@@ -453,7 +452,7 @@
               <div class="share-stats">
                 <div class="share-stat"><b id="shareTalk">--</b><span>トーク密度</span></div>
                 <div class="share-stat"><b id="shareTitle">--</b><span>タイトル一致</span></div>
-                <div class="share-stat"><b id="shareSilence">--</b><span>無言率</span></div>
+                <div class="share-stat"><b id="shareOpEnd">--</b><span>OP終了</span></div>
               </div>
             </div>
           </article>
@@ -726,13 +725,9 @@
       document.getElementById('talkDensityScore').textContent = data.talkDensityScore;
       document.getElementById('titleMatchScore').textContent = data.titleMatchScore;
       document.getElementById('mainTopicStartedAt').textContent = data.mainTopicStartedAt;
-      const silenceRate = data.silenceRate;
-      document.getElementById('silenceRate').textContent = silenceRate == null ? '未計測' : Number(silenceRate).toFixed(1);
-      document.getElementById('silenceUnit').textContent = silenceRate == null ? '' : '%';
       setMeter('talkDensityMeter', data.talkDensityScore);
       setMeter('titleMatchMeter', data.titleMatchScore);
       setMeter('introMeter', Math.max(0, 100 - Math.min(100, parseTimeToSeconds(data.mainTopicStartedAt) / 18)));
-      setMeter('silenceMeter', silenceRate == null ? 0 : Math.min(100, Number(silenceRate)));
 
       renderTextList('goodPointList', data.goodPoints);
       renderTextList('dropOffList', data.dropOffPoints);
@@ -778,7 +773,7 @@
       document.getElementById('shareType').textContent = data.streamType;
       document.getElementById('shareTalk').textContent = data.talkDensityScore;
       document.getElementById('shareTitle').textContent = data.titleMatchScore;
-      document.getElementById('shareSilence').textContent = silenceRate == null ? '--' : `${Number(silenceRate).toFixed(1)}%`;
+      document.getElementById('shareOpEnd').textContent = data.mainTopicStartedAt;
       window.latestAnalysis = data;
     }
 
@@ -842,7 +837,7 @@
     document.getElementById('copyBtn').addEventListener('click', async () => {
       const data = window.latestAnalysis;
       const text = data
-        ? `【配信カルテ】\n動画：${data.video?.title || 'YouTube動画'}\nURL：${data.video?.watchUrl || input.value.trim()}\n配信タイプ：${data.streamType}\n総合スコア：${data.overallScore}点\nトーク密度（Gemini推定）：${data.talkDensityScore}点\nタイトル一致（Gemini推定）：${data.titleMatchScore}点\n本題開始（Gemini推定）：${data.mainTopicStartedAt}\n無言率（簡易音声解析）：${data.silenceRate == null ? '未計測' : `${Number(data.silenceRate).toFixed(1)}%`}\n\n改善提案：${data.advice[0]}`
+        ? `【配信カルテ】\n動画：${data.video?.title || 'YouTube動画'}\nURL：${data.video?.watchUrl || input.value.trim()}\n配信タイプ：${data.streamType}\n総合スコア：${data.overallScore}点\nトーク密度（Gemini推定）：${data.talkDensityScore}点\nタイトル一致（Gemini推定）：${data.titleMatchScore}点\nOP終了（Gemini推定）：${data.mainTopicStartedAt}\n\n改善提案：${data.advice[0]}`
         : '配信カルテの診断結果はまだありません。';
       try {
         await navigator.clipboard.writeText(text);
