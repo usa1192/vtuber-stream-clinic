@@ -3,51 +3,752 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="description" content="公開YouTube配信をGeminiで診断する配信カルテ" />
-  <title>配信カルテ - VTuber配信診断</title>
-  <script src="/config.js"></script>
+  <meta name="description" content="VTuber配信アーカイブを診断する、配信カルテのUIプロトタイプ" />
+  <title>配信カルテ — VTuber配信診断</title>
   <style>
-    :root{--bg:#0c1020;--panel:rgba(24,30,55,.82);--line:rgba(255,255,255,.12);--text:#f6f8ff;--muted:#aeb6d4;--violet:#9d7bff;--cyan:#59dcff;--mint:#73f0bf;--yellow:#ffd66b;--red:#ff7b97;--radius:20px;--shadow:0 24px 80px rgba(0,0,0,.35)}
-    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-height:100vh;color:var(--text);background:radial-gradient(circle at 10% 0%,rgba(157,123,255,.22),transparent 34rem),radial-gradient(circle at 100% 15%,rgba(89,220,255,.13),transparent 28rem),linear-gradient(180deg,#0c1020 0%,#0b0e1a 100%);font-family:"Noto Sans JP","Yu Gothic UI",system-ui,sans-serif;line-height:1.65}.wrap{width:min(1120px,calc(100% - 32px));margin:auto}header{height:72px;display:flex;align-items:center;border-bottom:1px solid var(--line);background:rgba(12,16,32,.72);backdrop-filter:blur(16px);position:sticky;top:0;z-index:10}.bar{display:flex;align-items:center;justify-content:space-between;gap:16px}.brand{font-weight:900}.badge{font-size:12px;color:var(--mint);border:1px solid rgba(115,240,191,.28);border-radius:999px;padding:4px 10px;background:rgba(115,240,191,.06)}button,input{font:inherit}button{cursor:pointer}.hero{padding:76px 0 44px;text-align:center}.eyebrow{display:inline-flex;align-items:center;gap:8px;color:var(--mint);font-weight:800;border:1px solid rgba(115,240,191,.25);border-radius:999px;padding:6px 12px;background:rgba(115,240,191,.06)}h1{font-size:clamp(38px,7vw,74px);line-height:1.08;margin:22px auto 18px;max-width:930px;letter-spacing:-.04em}.grad{background:linear-gradient(90deg,#fff 10%,#c4b4ff 48%,#70e5ff 92%);-webkit-background-clip:text;background-clip:text;color:transparent}.lead{max-width:760px;margin:0 auto;color:var(--muted);font-size:clamp(16px,2vw,19px)}.form{margin:34px auto 0;max-width:900px;padding:14px;display:grid;grid-template-columns:1fr auto;gap:10px;border:1px solid var(--line);border-radius:22px;background:rgba(255,255,255,.055);box-shadow:var(--shadow)}.url{min-width:0;color:var(--text);background:rgba(4,7,15,.72);border:1px solid transparent;border-radius:14px;padding:16px 18px;outline:none}.url:focus{border-color:rgba(89,220,255,.65)}.btn{border:0;border-radius:14px;padding:14px 20px;font-weight:900}.primary{color:#07101d;background:linear-gradient(135deg,var(--violet),var(--cyan))}.secondary{color:var(--text);background:rgba(255,255,255,.08);border:1px solid var(--line)}.note,.sub{max-width:900px;margin:10px auto 0;color:var(--muted);font-size:13px}.link{border:0;background:transparent;color:var(--cyan);text-decoration:underline;text-underline-offset:4px}.error{min-height:28px;margin-top:10px;color:var(--red);font-size:14px}.features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:48px;text-align:left}.mini{padding:18px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.035)}.mini span{display:block;color:var(--muted);font-size:13px}.scanner{display:none;max-width:900px;margin:0 auto 46px;padding:28px;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);box-shadow:var(--shadow)}.scanner.active{display:block}.scanTop{display:flex;align-items:center;justify-content:space-between;gap:16px}.spin{width:36px;height:36px;border-radius:50%;border:3px solid rgba(255,255,255,.14);border-top-color:var(--cyan);animation:spin .8s linear infinite}.scanTitle{display:flex;align-items:center;gap:12px}.track{height:10px;background:rgba(255,255,255,.08);border-radius:999px;overflow:hidden;margin-top:22px}.barFill{height:100%;width:0%;background:linear-gradient(90deg,var(--violet),var(--cyan),var(--mint));transition:width .25s ease}.results{display:none;padding:0 0 80px}.results.active{display:block}.head{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:18px}.head h2{margin:0;font-size:clamp(30px,4vw,44px)}.head p{margin:4px 0 0;color:var(--muted)}.actions{display:flex;gap:10px;flex-wrap:wrap}.video{display:none;grid-template-columns:minmax(220px,360px) 1fr;gap:18px;align-items:center;margin-bottom:16px;padding:14px;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);box-shadow:var(--shadow)}.video.active{display:grid}.thumb{position:relative;display:block;overflow:hidden;border-radius:14px;background:#050915;aspect-ratio:16/9}.thumb img{width:100%;height:100%;object-fit:cover;display:block}.play{position:absolute;inset:0;display:grid;place-items:center;font-size:38px;text-shadow:0 8px 24px rgba(0,0,0,.5);background:linear-gradient(180deg,transparent,rgba(0,0,0,.24))}.video h3{margin:4px 0 10px;font-size:clamp(18px,2vw,24px);line-height:1.35}.video p{margin:0 0 14px;color:var(--muted);font-size:13px}.summary{padding:30px;border:1px solid rgba(157,123,255,.3);border-radius:var(--radius);background:radial-gradient(circle at 86% 0%,rgba(89,220,255,.15),transparent 24rem),linear-gradient(145deg,rgba(157,123,255,.13),rgba(255,255,255,.04));box-shadow:var(--shadow)}.summaryGrid{display:grid;grid-template-columns:1.2fr .8fr;gap:28px;align-items:center}.label{color:var(--muted);font-size:13px;letter-spacing:.08em}.type{margin:6px 0 12px;font-size:clamp(30px,5vw,50px);line-height:1.15}.diagnosis{margin:0;color:#dbe1fa}.ring{width:176px;aspect-ratio:1;margin:auto;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--mint) 0 0%,rgba(255,255,255,.09) 0 100%);position:relative}.ring:after{content:"";position:absolute;inset:13px;border-radius:50%;background:#151b31;border:1px solid var(--line)}.score{z-index:1;text-align:center;font-size:46px;font-weight:950;line-height:1}.score small{display:block;margin-top:8px;color:var(--muted);font-size:12px;font-weight:600}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px}.metric{padding:18px;border:1px solid var(--line);border-radius:18px;background:var(--panel)}.metricName{color:var(--muted);font-size:12px}.metricValue{display:flex;align-items:baseline;gap:4px;margin-top:5px;font-size:28px;font-weight:950}.metricValue small{font-size:12px;color:var(--muted)}.meter{margin-top:11px;height:5px;border-radius:999px;overflow:hidden;background:rgba(255,255,255,.08)}.meter span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--violet),var(--cyan))}.grid{display:grid;grid-template-columns:1.35fr .65fr;gap:16px;margin-top:16px}.panel{padding:24px;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel)}.panel h3{margin:0 0 16px;font-size:18px}.timelineLabels{display:flex;justify-content:space-between;color:var(--muted);font-size:11px;margin-bottom:8px}.timeline{height:54px;display:flex;gap:3px;padding:6px;background:rgba(0,0,0,.22);border:1px solid var(--line);border-radius:13px}.seg{border-radius:7px}.list{display:grid;gap:10px}.highlight,.advice{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:14px;background:rgba(255,255,255,.035);border:1px solid var(--line);border-radius:14px}.highlight{color:inherit;text-decoration:none}.highlight:hover{border-color:rgba(89,220,255,.45);background:rgba(89,220,255,.055)}.time{font-variant-numeric:tabular-nums;color:var(--cyan);font-weight:900}.highlight p,.advice p{margin:0}.highlight small,.advice small{color:var(--muted)}.tag{padding:4px 8px;border-radius:999px;background:rgba(115,240,191,.08);color:var(--mint);font-size:10px}.advice{grid-template-columns:auto 1fr}.num{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;background:rgba(255,214,107,.1);color:var(--yellow);font-weight:950}.share{margin-top:16px;padding:20px;border-radius:18px;background:linear-gradient(145deg,#20295a,#12172d);border:1px solid rgba(255,255,255,.12)}.shareStats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.shareStats div{padding:10px;border-radius:10px;background:rgba(255,255,255,.06)}.shareStats b{display:block;font-size:20px}.shareStats span{color:var(--muted);font-size:10px}.notice{margin-top:18px;padding:15px 18px;border-radius:14px;color:var(--muted);background:rgba(255,214,107,.05);border:1px solid rgba(255,214,107,.18);font-size:12px}.warnings{margin:12px 0 0;padding-left:18px}.toast{position:fixed;right:24px;bottom:24px;opacity:0;transform:translateY(15px);pointer-events:none;transition:.25s ease;padding:12px 16px;border:1px solid rgba(115,240,191,.24);border-radius:12px;background:#121a2c;color:var(--mint);box-shadow:var(--shadow)}.toast.show{opacity:1;transform:translateY(0)}footer{border-top:1px solid var(--line);color:var(--muted);padding:28px 0 38px;font-size:12px}@keyframes spin{to{transform:rotate(360deg)}}@media(max-width:900px){.features,.metrics{grid-template-columns:repeat(2,1fr)}.summaryGrid,.grid,.video{grid-template-columns:1fr}.ring{width:150px}}@media(max-width:620px){.form{grid-template-columns:1fr}.features,.metrics{grid-template-columns:1fr}.head{align-items:stretch;flex-direction:column}.actions{display:grid;grid-template-columns:1fr 1fr}.summary,.panel{padding:20px}.highlight{grid-template-columns:auto 1fr}.highlight .tag{grid-column:2;justify-self:start}}
+    :root {
+      --bg: #0c1020;
+      --panel: rgba(22, 27, 49, .78);
+      --panel-strong: #161c35;
+      --line: rgba(255, 255, 255, .09);
+      --text: #f5f7ff;
+      --muted: #aeb6d4;
+      --violet: #9d7bff;
+      --cyan: #59dcff;
+      --mint: #73f0bf;
+      --yellow: #ffd66b;
+      --red: #ff7b97;
+      --shadow: 0 24px 80px rgba(0,0,0,.35);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 10% 0%, rgba(157,123,255,.22), transparent 34rem),
+        radial-gradient(circle at 100% 15%, rgba(89,220,255,.13), transparent 28rem),
+        linear-gradient(180deg, #0c1020 0%, #0b0e1a 100%);
+      font-family: Inter, "Noto Sans JP", "Hiragino Sans", "Yu Gothic UI", system-ui, sans-serif;
+      line-height: 1.65;
+    }
+
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    a { color: inherit; }
+
+    .noise {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .025;
+      z-index: 100;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E");
+    }
+
+    .wrap { width: min(1160px, calc(100% - 32px)); margin-inline: auto; }
+
+    header {
+      height: 76px;
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+      background: rgba(12, 16, 32, .62);
+      backdrop-filter: blur(18px);
+      position: sticky;
+      top: 0;
+      z-index: 30;
+    }
+
+    header .wrap { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 850; letter-spacing: .02em; }
+    .brand-mark {
+      width: 38px; height: 38px; display: grid; place-items: center;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--violet), var(--cyan));
+      color: #08101c;
+      box-shadow: 0 8px 30px rgba(116, 167, 255, .28);
+    }
+    .beta { font-size: 11px; color: #d9ddf7; border: 1px solid var(--line); border-radius: 999px; padding: 2px 8px; }
+    nav { display: flex; gap: 10px; align-items: center; }
+    .nav-link { color: var(--muted); text-decoration: none; font-size: 14px; padding: 9px 12px; border-radius: 10px; }
+    .nav-link:hover { background: rgba(255,255,255,.05); color: var(--text); }
+
+    .hero { padding: 86px 0 58px; text-align: center; }
+    .eyebrow {
+      display: inline-flex; gap: 8px; align-items: center;
+      padding: 6px 12px; border: 1px solid rgba(115,240,191,.25); border-radius: 999px;
+      color: var(--mint); background: rgba(115,240,191,.06); font-size: 13px; font-weight: 700;
+    }
+    h1 { font-size: clamp(40px, 7vw, 78px); line-height: 1.08; margin: 22px auto 20px; letter-spacing: -.055em; max-width: 900px; }
+    .gradient-text { background: linear-gradient(90deg, #fff 10%, #c4b4ff 46%, #70e5ff 90%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .lead { max-width: 680px; margin: 0 auto; color: var(--muted); font-size: clamp(16px, 2vw, 19px); }
+
+    .diagnose-box {
+      margin: 36px auto 0;
+      max-width: 860px;
+      padding: 14px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 20px;
+      background: rgba(255,255,255,.055);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(20px);
+    }
+    .url-input {
+      min-width: 0;
+      color: var(--text);
+      background: rgba(4,7,15,.72);
+      border: 1px solid transparent;
+      border-radius: 14px;
+      padding: 16px 18px;
+      outline: none;
+    }
+    .url-input:focus { border-color: rgba(89,220,255,.65); box-shadow: 0 0 0 3px rgba(89,220,255,.08); }
+    .primary-btn, .secondary-btn {
+      border: 0; border-radius: 14px; padding: 14px 20px; font-weight: 800;
+      transition: transform .18s ease, filter .18s ease, background .18s ease;
+    }
+    .primary-btn { background: linear-gradient(135deg, var(--violet), var(--cyan)); color: #07101d; }
+    .primary-btn:hover { transform: translateY(-2px); filter: brightness(1.06); }
+    .secondary-btn { color: var(--text); background: rgba(255,255,255,.07); border: 1px solid var(--line); }
+    .secondary-btn:hover { background: rgba(255,255,255,.11); }
+    .sub-actions { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; margin-top: 14px; color: var(--muted); font-size: 13px; }
+    .text-button { border: 0; background: transparent; color: var(--cyan); padding: 4px; text-decoration: underline; text-underline-offset: 4px; }
+    .error { min-height: 24px; margin-top: 8px; color: var(--red); font-size: 13px; }
+    .input-note { max-width: 860px; margin: 10px auto 0; color: var(--muted); font-size: 12px; }
+    .mode-picker {
+      max-width: 860px;
+      margin: 12px auto 0;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding: 8px;
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 16px;
+      background: rgba(255,255,255,.04);
+    }
+    .mode-btn {
+      border: 1px solid transparent;
+      border-radius: 12px;
+      padding: 10px 12px;
+      color: var(--muted);
+      background: transparent;
+      text-align: left;
+    }
+    .mode-btn strong { display: block; color: var(--text); font-size: 13px; }
+    .mode-btn span { display: block; font-size: 11px; line-height: 1.45; }
+    .mode-btn.active { border-color: rgba(89,220,255,.55); color: #dfe8ff; background: rgba(89,220,255,.08); }
+
+    .feature-row { margin-top: 54px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; text-align: left; }
+    .mini-card { padding: 18px; border: 1px solid var(--line); background: rgba(255,255,255,.035); border-radius: 18px; }
+    .mini-card strong { display: block; margin-bottom: 2px; }
+    .mini-card span { color: var(--muted); font-size: 13px; }
+
+    .scanner { display: none; padding: 30px; margin: 0 auto 50px; max-width: 860px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); box-shadow: var(--shadow); }
+    .scanner.active { display: block; animation: rise .45s ease both; }
+    .scan-top { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 22px; }
+    .scan-title { display: flex; align-items: center; gap: 12px; }
+    .spinner { width: 38px; height: 38px; border-radius: 50%; border: 3px solid rgba(255,255,255,.12); border-top-color: var(--cyan); animation: spin .8s linear infinite; }
+    .progress-track { height: 10px; background: rgba(255,255,255,.06); border-radius: 999px; overflow: hidden; }
+    .progress-bar { height: 100%; width: 0%; border-radius: inherit; background: linear-gradient(90deg, var(--violet), var(--cyan), var(--mint)); transition: width .28s ease; }
+    .scan-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 20px; }
+    .scan-step { color: var(--muted); background: rgba(255,255,255,.035); border: 1px solid var(--line); padding: 10px; border-radius: 12px; font-size: 12px; text-align: center; }
+    .scan-step.done { color: var(--mint); border-color: rgba(115,240,191,.28); background: rgba(115,240,191,.06); }
+
+    .results { display: none; padding: 0 0 90px; }
+    .results.active { display: block; animation: rise .55s ease both; }
+    .section-head { display: flex; align-items: end; justify-content: space-between; gap: 22px; margin: 0 0 22px; }
+    .section-head h2 { margin: 0; font-size: clamp(27px, 4vw, 42px); letter-spacing: -.035em; }
+    .section-head p { margin: 4px 0 0; color: var(--muted); }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    .video-embed {
+      display: none;
+      grid-template-columns: minmax(220px, 360px) 1fr;
+      gap: 18px;
+      align-items: center;
+      margin-bottom: 16px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+    .video-embed.active { display: grid; }
+    .thumb-link {
+      position: relative;
+      display: block;
+      overflow: hidden;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: #050915;
+      aspect-ratio: 16 / 9;
+    }
+    .thumb-link img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .play-badge {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-size: 38px;
+      text-shadow: 0 8px 24px rgba(0,0,0,.5);
+      background: linear-gradient(180deg, transparent, rgba(0,0,0,.22));
+    }
+    .video-meta h3 { margin: 4px 0 10px; font-size: clamp(18px, 2vw, 24px); line-height: 1.35; }
+    .video-meta p { margin: 0 0 14px; color: var(--muted); font-size: 13px; }
+    .video-meta .secondary-btn { display: inline-flex; text-decoration: none; }
+
+    .summary-card {
+      padding: 30px; border-radius: var(--radius); border: 1px solid rgba(157,123,255,.3);
+      background:
+        radial-gradient(circle at 86% 0%, rgba(89,220,255,.15), transparent 24rem),
+        linear-gradient(145deg, rgba(157,123,255,.13), rgba(255,255,255,.04));
+      box-shadow: var(--shadow);
+    }
+    .summary-grid { display: grid; grid-template-columns: 1.2fr .8fr; gap: 28px; align-items: center; }
+    .type-label { color: var(--muted); font-size: 13px; letter-spacing: .1em; text-transform: uppercase; }
+    .stream-type { margin: 6px 0 12px; font-size: clamp(30px, 5vw, 52px); line-height: 1.15; letter-spacing: -.04em; }
+    .diagnosis { color: #dbe1fa; margin: 0; max-width: 680px; }
+    .score-ring {
+      width: 180px; aspect-ratio: 1; margin-inline: auto; display: grid; place-items: center; border-radius: 50%;
+      background: conic-gradient(var(--mint) 0 78%, rgba(255,255,255,.08) 78% 100%);
+      position: relative;
+    }
+    .score-ring::after { content: ""; position: absolute; inset: 13px; border-radius: 50%; background: #151b31; border: 1px solid var(--line); }
+    .score-value { z-index: 1; text-align: center; font-size: 46px; font-weight: 900; line-height: 1; }
+    .score-value small { display: block; margin-top: 9px; color: var(--muted); font-size: 12px; font-weight: 600; }
+
+    .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 16px; }
+    .metric { padding: 18px; border-radius: 18px; background: var(--panel); border: 1px solid var(--line); }
+    .metric.unmeasured { opacity: .82; }
+    .metric-name { color: var(--muted); font-size: 12px; }
+    .metric-value { display: flex; align-items: baseline; gap: 4px; margin-top: 5px; font-size: 28px; font-weight: 900; }
+    .metric-value small { font-size: 12px; color: var(--muted); }
+    .meter { margin-top: 11px; height: 5px; border-radius: 999px; overflow: hidden; background: rgba(255,255,255,.07); }
+    .meter span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--violet), var(--cyan)); }
+
+    .content-grid { display: grid; grid-template-columns: 1.35fr .65fr; gap: 16px; margin-top: 16px; }
+    .panel { border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; background: var(--panel); }
+    .panel h3 { margin: 0 0 16px; font-size: 18px; }
+    .timeline-labels { display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; margin-bottom: 8px; }
+    .timeline { height: 54px; display: flex; gap: 3px; padding: 6px; background: rgba(0,0,0,.22); border: 1px solid var(--line); border-radius: 13px; }
+    .segment { min-width: 4px; border-radius: 7px; position: relative; transition: transform .15s ease, filter .15s ease; }
+    .segment:hover { transform: scaleY(1.13); filter: brightness(1.15); }
+    .segment::after { content: attr(data-tip); opacity: 0; pointer-events: none; position: absolute; left: 50%; bottom: calc(100% + 10px); transform: translateX(-50%); white-space: nowrap; background: #050915; color: #fff; border: 1px solid var(--line); padding: 7px 9px; border-radius: 9px; font-size: 11px; transition: opacity .15s ease; z-index: 10; }
+    .segment:hover::after { opacity: 1; }
+    .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 13px; color: var(--muted); font-size: 12px; }
+    .legend i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; }
+
+    .highlight-list, .advice-list { display: grid; gap: 10px; }
+    .highlight, .advice { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; padding: 14px; background: rgba(255,255,255,.035); border: 1px solid var(--line); border-radius: 14px; }
+    .highlight { color: inherit; text-decoration: none; }
+    .highlight:hover { border-color: rgba(89,220,255,.45); background: rgba(89,220,255,.055); }
+    .time { font-variant-numeric: tabular-nums; color: var(--cyan); font-weight: 800; }
+    .highlight p, .advice p { margin: 0; }
+    .highlight small, .advice small { color: var(--muted); }
+    .tag { padding: 4px 8px; border-radius: 999px; background: rgba(115,240,191,.08); color: var(--mint); font-size: 10px; }
+    .advice { grid-template-columns: auto 1fr; }
+    .priority { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 10px; background: rgba(255,214,107,.1); color: var(--yellow); font-weight: 900; }
+    .insight-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px; }
+    .insight-card { padding: 18px; border-radius: 18px; border: 1px solid var(--line); background: var(--panel); }
+    .insight-card h3 { margin: 0 0 12px; font-size: 17px; }
+    .insight-card ul { margin: 0; padding-left: 18px; color: #dbe1fa; font-size: 13px; }
+    .insight-card li + li { margin-top: 10px; }
+
+    .share-preview { margin-top: 16px; padding: 20px; border-radius: 18px; background: linear-gradient(145deg, #20295a, #12172d); border: 1px solid rgba(255,255,255,.12); }
+    .share-top { display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 11px; }
+    .share-type { margin: 18px 0; font-size: 24px; font-weight: 900; }
+    .share-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .share-stat { padding: 10px; border-radius: 10px; background: rgba(255,255,255,.06); }
+    .share-stat b { display: block; font-size: 20px; }
+    .share-stat span { color: var(--muted); font-size: 10px; }
+
+    .notice { margin-top: 18px; padding: 15px 18px; border-radius: 14px; color: var(--muted); background: rgba(255,214,107,.05); border: 1px solid rgba(255,214,107,.18); font-size: 12px; }
+    .warning-list { margin: 12px 0 0; padding-left: 18px; color: var(--muted); font-size: 12px; }
+    footer { border-top: 1px solid var(--line); color: var(--muted); padding: 28px 0 38px; font-size: 12px; }
+
+    .toast { position: fixed; right: 24px; bottom: 24px; z-index: 90; opacity: 0; transform: translateY(15px); pointer-events: none; transition: .25s ease; padding: 12px 16px; border: 1px solid rgba(115,240,191,.24); border-radius: 12px; background: #121a2c; color: var(--mint); box-shadow: var(--shadow); }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 900px) {
+      .feature-row, .metrics { grid-template-columns: repeat(2, 1fr); }
+      .summary-grid, .content-grid { grid-template-columns: 1fr; }
+      .video-embed { grid-template-columns: 1fr; }
+      .score-ring { width: 150px; }
+      .scan-list { grid-template-columns: repeat(2, 1fr); }
+      .insight-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 620px) {
+      header { height: 66px; }
+      nav .nav-link { display: none; }
+      .hero { padding-top: 56px; }
+      .diagnose-box { grid-template-columns: 1fr; }
+      .mode-picker { grid-template-columns: 1fr; }
+      .feature-row, .metrics { grid-template-columns: 1fr; }
+      .section-head { align-items: stretch; flex-direction: column; }
+      .actions { display: grid; grid-template-columns: 1fr 1fr; }
+      .summary-card, .panel { padding: 20px; }
+      .highlight { grid-template-columns: auto 1fr; }
+      .highlight .tag { grid-column: 2; justify-self: start; }
+    }
   </style>
+  <script src="/config.js"></script>
 </head>
 <body>
-  <header><div class="wrap bar"><div class="brand">配信カルテ</div><div class="badge">公開YouTube動画のみ対応</div></div></header>
+  <div class="noise"></div>
+  <header>
+    <div class="wrap">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">✚</span>
+        <span>配信カルテ</span>
+        <span class="beta">UI PROTOTYPE</span>
+      </div>
+      <nav aria-label="メインナビゲーション">
+        <a class="nav-link" href="#how">診断項目</a>
+        <a class="nav-link" href="#result">サンプル結果</a>
+        <button class="secondary-btn" id="demoTop">デモを見る</button>
+      </nav>
+    </div>
+  </header>
+
   <main>
-    <section class="hero wrap">
+    <section class="hero wrap" id="how">
       <div class="eyebrow">● VTuber配信を、感覚ではなくデータで改善</div>
-      <h1><span class="grad">その配信、どこで伸びて<br>どこで離脱されてる？</span></h1>
-      <p class="lead">公開YouTube動画のURLを入力すると、Geminiが冒頭30分を重点的に確認し、トーク密度の参考点・導入速度・タイトル一致度・切り抜き候補をカルテ形式で見える化します。</p>
-      <form class="form" id="form"><input class="url" id="url" placeholder="https://www.youtube.com/watch?v=..." autocomplete="url" /><button class="btn primary" id="submit">Geminiで診断する</button></form>
-      <div class="note">公開YouTube動画のみ対応しています。限定公開・非公開・メンバー限定動画や、正確なYouTube Analytics値の取得には対応していません。</div>
-      <div class="error" id="error" role="alert"></div>
-      <div class="sub">APIキーはローカルまたはRenderの .env から読み込みます ・ <button class="link" id="demo">入力例を入れる</button></div>
-      <div class="features"><div class="mini"><strong>⏱ 導入を診断</strong><span>本題へ入るまでの長さを可視化</span></div><div class="mini"><strong>🎙 トークを分析</strong><span>話題と会話量の密度を推定</span></div><div class="mini"><strong>✂️ 見どころを発見</strong><span>クリックできる時間リンクを提案</span></div></div>
+      <h1><span class="gradient-text">その配信、どこで伸びて<br>どこで離脱されてる？</span></h1>
+      <p class="lead">公開YouTube動画のURLを入力すると、Geminiが冒頭30分を重点的に確認し、難しい場合は範囲を短縮しながら、トーク密度の参考点・導入速度・タイトル一致度・切り抜き候補をカルテ形式で見える化します。</p>
+
+      <form class="diagnose-box" id="diagnoseForm">
+        <label for="youtubeUrl" style="position:absolute;left:-9999px">YouTubeアーカイブURL</label>
+        <input class="url-input" id="youtubeUrl" autocomplete="url" inputmode="url" placeholder="https://www.youtube.com/watch?v=..." />
+        <button class="primary-btn" id="submitBtn" type="submit">Geminiで診断する</button>
+      </form>
+      <div class="mode-picker" aria-label="診断モード">
+        <button class="mode-btn" type="button" data-mode="light"><strong>軽量診断</strong><span>冒頭10分。上限にやさしく素早い</span></button>
+        <button class="mode-btn active" type="button" data-mode="standard"><strong>標準診断</strong><span>冒頭30分。おすすめの基本モード</span></button>
+        <button class="mode-btn" type="button" data-mode="deep"><strong>じっくり診断</strong><span>濃いめの診断。失敗時は短縮</span></button>
+      </div>
+      <div class="input-note">公開YouTube動画のみ対応しています。限定公開・非公開・メンバー限定動画や、正確なYouTube Analytics値の取得には対応していません。</div>
+      <div class="error" id="errorText" role="alert"></div>
+      <div class="sub-actions">
+        <span>APIキーはローカルの .env から読み込みます</span><span>•</span>
+        <button class="text-button" id="demoLink">入力例を入れる</button>
+      </div>
+
+      <div class="feature-row">
+        <div class="mini-card"><strong>⏱ 導入を診断</strong><span>本題へ入るまでの長さを可視化</span></div>
+        <div class="mini-card"><strong>🎙 トークを分析</strong><span>無言・発話・話題の密度を測定</span></div>
+        <div class="mini-card"><strong>✂️ 見どころを発見</strong><span>Shorts候補の時間帯を提案</span></div>
+      </div>
     </section>
-    <section class="scanner wrap" id="scanner"><div class="scanTop"><div class="scanTitle"><div class="spin"></div><div><strong id="scanMessage">動画情報を確認しています</strong><div style="color:var(--muted);font-size:12px">Geminiで公開動画を分析中</div></div></div><strong id="progressNum">0%</strong></div><div class="track"><div class="barFill" id="progressBar"></div></div></section>
+
+    <section class="scanner wrap" id="scanner" aria-live="polite">
+      <div class="scan-top">
+        <div class="scan-title"><div class="spinner"></div><div><strong id="scanMessage">動画情報を確認しています</strong><div style="color:var(--muted);font-size:12px">Geminiで公開動画を分析中</div></div></div>
+        <strong id="progressNum">0%</strong>
+      </div>
+      <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+      <div class="scan-list">
+        <div class="scan-step" data-step="0">動画情報</div>
+        <div class="scan-step" data-step="1">音声解析</div>
+        <div class="scan-step" data-step="2">話題分類</div>
+        <div class="scan-step" data-step="3">カルテ作成</div>
+      </div>
+    </section>
+
     <section class="results wrap" id="result">
-      <div class="head"><div><h2>配信カルテ</h2><p>Geminiによる公開YouTube動画の推定診断結果</p></div><div class="actions"><button class="btn secondary" id="retry">別の動画を診断</button><button class="btn primary" id="copy">共有文をコピー</button></div></div>
-      <article class="video" id="videoCard"><a class="thumb" id="thumbLink" target="_blank" rel="noopener noreferrer"><img id="thumb" alt=""><span class="play">▶</span></a><div><div class="label">診断した動画</div><h3 id="videoTitle">動画タイトル</h3><p>サムネイルとタイトルを確認しながら、盛り上がり候補から該当タイムスタンプへ移動できます。</p><a class="btn secondary" id="openVideo" target="_blank" rel="noopener noreferrer">YouTubeで開く</a></div></article>
-      <article class="summary"><div class="summaryGrid"><div><div class="label">配信タイプ</div><h3 class="type" id="streamType">診断待ち</h3><p class="diagnosis" id="summary">公開YouTube動画を送信すると、ここに分析要約が表示されます。</p></div><div class="ring" id="ring"><div class="score"><span id="score">--</span><small>総合スコア / 100</small></div></div></div></article>
-      <div class="metrics"><div class="metric"><div class="metricName">トーク密度（Gemini推定）</div><div class="metricValue"><span id="talk">--</span><small>点</small></div><div class="meter"><span id="talkMeter"></span></div></div><div class="metric"><div class="metricName">本題開始（Gemini推定）</div><div class="metricValue"><span id="start">--:--</span></div><div class="meter"><span id="startMeter" style="background:linear-gradient(90deg,var(--red),var(--yellow))"></span></div></div><div class="metric"><div class="metricName">タイトル一致（Gemini推定）</div><div class="metricValue"><span id="titleScore">--</span><small>点</small></div><div class="meter"><span id="titleMeter"></span></div></div><div class="metric"><div class="metricName">無言率（簡易音声解析）</div><div class="metricValue"><span id="silence">--</span><small id="silenceUnit">%</small></div><div class="meter"><span id="silenceMeter" style="background:linear-gradient(90deg,var(--mint),var(--cyan))"></span></div></div></div>
-      <div class="grid"><div><article class="panel"><h3>配信テンションマップ</h3><div class="timelineLabels"><span>00:00</span><span>30:00</span><span>1:00:00</span><span>1:30:00</span><span>2:00:00</span></div><div class="timeline"><div class="seg" style="width:10%;background:#4b5578"></div><div class="seg" style="width:16%;background:#6576c9"></div><div class="seg" style="width:14%;background:#59dcff"></div><div class="seg" style="width:22%;background:#9d7bff"></div><div class="seg" style="width:10%;background:#73f0bf"></div><div class="seg" style="width:9%;background:#6c5066"></div><div class="seg" style="width:12%;background:#73f0bf"></div><div class="seg" style="width:7%;background:#ffd66b"></div></div></article><article class="panel" style="margin-top:16px"><h3>YouTubeでの盛り上がり候補</h3><div class="list" id="highlights"></div></article></div><aside><article class="panel"><h3>改善処方</h3><div class="list" id="advice"></div></article><article class="panel" style="margin-top:16px"><h3>共有カード</h3><div class="share"><div style="color:var(--muted);font-size:11px">配信カルテ</div><h3 id="shareType">診断待ち</h3><div class="shareStats"><div><b id="shareTalk">--</b><span>トーク密度</span></div><div><b id="shareTitle">--</b><span>タイトル一致</span></div><div><b id="shareSilence">--</b><span>無言率</span></div></div></div></article></aside></div>
-      <div class="notice">※ Geminiによる動画内容の推定診断と、冒頭30分の簡易音声解析を組み合わせています。YouTube Analyticsの実測値ではありません。<ul class="warnings" id="warnings"></ul></div>
+      <div class="section-head">
+        <div><h2>配信カルテ</h2><p id="resultSubtitle">Geminiによる公開YouTube動画の推定診断結果</p></div>
+        <div class="actions">
+          <button class="secondary-btn" id="retryBtn">別の動画を診断</button>
+          <button class="primary-btn" id="copyBtn">共有文をコピー</button>
+        </div>
+      </div>
+
+      <article class="video-embed" id="videoEmbed">
+        <a class="thumb-link" id="videoThumbLink" href="#" target="_blank" rel="noopener noreferrer" aria-label="YouTubeで動画を開く">
+          <img id="videoThumb" alt="" />
+          <span class="play-badge" aria-hidden="true">▶</span>
+        </a>
+        <div class="video-meta">
+          <div class="type-label">診断した動画</div>
+          <h3 id="videoTitle">動画タイトル</h3>
+          <p>サムネイルとタイトルを確認しながら、下の盛り上がり候補から該当タイムスタンプへ移動できます。</p>
+          <a class="secondary-btn" id="videoOpenLink" href="#" target="_blank" rel="noopener noreferrer">YouTubeで開く</a>
+        </div>
+      </article>
+
+      <article class="summary-card">
+        <div class="summary-grid">
+          <div>
+            <div class="type-label">配信タイプ</div>
+            <h3 class="stream-type" id="streamType">診断待ち</h3>
+            <p class="diagnosis" id="summaryText">公開YouTube動画を送信すると、ここにGeminiの分析要約が表示されます。</p>
+          </div>
+          <div class="score-ring" id="scoreRing" aria-label="総合スコア未診断"><div class="score-value"><span id="overallScore">--</span><small>総合スコア / 100</small></div></div>
+        </div>
+      </article>
+
+      <div class="metrics">
+        <div class="metric"><div class="metric-name">トーク密度（Gemini推定）</div><div class="metric-value"><span id="talkDensityScore">--</span><small>点</small></div><div class="meter"><span id="talkDensityMeter" style="width:0%"></span></div></div>
+        <div class="metric"><div class="metric-name">本題開始（Gemini推定）</div><div class="metric-value"><span id="mainTopicStartedAt">--:--</span></div><div class="meter"><span id="introMeter" style="width:0%;background:linear-gradient(90deg,var(--red),var(--yellow))"></span></div></div>
+        <div class="metric"><div class="metric-name">タイトル一致（Gemini推定）</div><div class="metric-value"><span id="titleMatchScore">--</span><small>点</small></div><div class="meter"><span id="titleMatchMeter" style="width:0%"></span></div></div>
+        <div class="metric"><div class="metric-name">無言率（簡易音声解析）</div><div class="metric-value"><span id="silenceRate">--</span><small id="silenceUnit">%</small></div><div class="meter"><span id="silenceMeter" style="width:0%;background:linear-gradient(90deg,var(--mint),var(--cyan))"></span></div></div>
+      </div>
+
+      <div class="insight-grid">
+        <article class="insight-card">
+          <h3>良かった点</h3>
+          <ul id="goodPointList"></ul>
+        </article>
+        <article class="insight-card">
+          <h3>離脱ポイント</h3>
+          <ul id="dropOffList"></ul>
+        </article>
+        <article class="insight-card">
+          <h3>次回の改善手順</h3>
+          <ul id="nextActionList"></ul>
+        </article>
+      </div>
+
+      <div class="content-grid">
+        <div>
+          <article class="panel">
+            <h3>配信テンションマップ</h3>
+            <div class="timeline-labels"><span>00:00</span><span>30:00</span><span>1:00:00</span><span>1:30:00</span><span>2:00:00</span></div>
+            <div class="timeline" aria-label="配信テンションの時間推移">
+              <div class="segment" data-tip="挨拶・待機" style="width:10%;background:#4b5578"></div>
+              <div class="segment" data-tip="近況雑談" style="width:16%;background:#6576c9"></div>
+              <div class="segment" data-tip="本題開始" style="width:14%;background:#59dcff"></div>
+              <div class="segment" data-tip="ゲーム進行" style="width:22%;background:#9d7bff"></div>
+              <div class="segment" data-tip="盛り上がり" style="width:10%;background:#73f0bf"></div>
+              <div class="segment" data-tip="停滞区間" style="width:9%;background:#6c5066"></div>
+              <div class="segment" data-tip="コメント盛況" style="width:12%;background:#73f0bf"></div>
+              <div class="segment" data-tip="エンディング" style="width:7%;background:#ffd66b"></div>
+            </div>
+            <div class="legend">
+              <span><i style="background:#4b5578"></i>低密度</span><span><i style="background:#9d7bff"></i>通常</span><span><i style="background:#73f0bf"></i>盛り上がり</span><span><i style="background:#6c5066"></i>離脱注意</span>
+            </div>
+          </article>
+
+          <article class="panel" style="margin-top:16px">
+            <h3>Shorts・切り抜き候補</h3>
+            <div class="highlight-list" id="highlightList"></div>
+          </article>
+        </div>
+
+        <aside>
+          <article class="panel">
+            <h3>改善処方</h3>
+            <div class="advice-list" id="adviceList"></div>
+          </article>
+
+          <article class="panel" style="margin-top:16px">
+            <h3>共有カード</h3>
+            <div class="share-preview">
+              <div class="share-top"><span>配信カルテ</span><span>STREAM CHECK</span></div>
+              <div class="share-type" id="shareType">診断待ち</div>
+              <div class="share-stats">
+                <div class="share-stat"><b id="shareTalk">--</b><span>トーク密度</span></div>
+                <div class="share-stat"><b id="shareTitle">--</b><span>タイトル一致</span></div>
+                <div class="share-stat"><b id="shareSilence">--</b><span>無言率</span></div>
+              </div>
+            </div>
+          </article>
+        </aside>
+      </div>
+
+      <div class="notice">
+        ※ Geminiによる動画内容の推定診断と、冒頭30分の簡易音声解析を組み合わせています。YouTube Analyticsの実測値ではありません。
+        <ul class="warning-list" id="warningList"></ul>
+      </div>
     </section>
   </main>
-  <footer><div class="wrap">配信カルテ - 責める採点ではなく、次回のヒントへ。</div></footer><div class="toast" id="toast">共有文をコピーしました</div>
+
+  <footer>
+    <div class="wrap">配信カルテ UI Prototype — VTuber配信の改善を、責める採点ではなく次回のヒントへ。</div>
+  </footer>
+
+  <div class="toast" id="toast">共有文をコピーしました</div>
+
   <script>
-    const $=id=>document.getElementById(id);const API=(window.KARTE_API_BASE_URL||'').replace(/\/$/,'');let latest=null;let timer=null;
-    function isYouTube(v){try{const u=new URL(v);return ['youtube.com','www.youtube.com','youtu.be','m.youtube.com'].includes(u.hostname)}catch{return false}}
-    function seconds(t){const p=String(t||'').split(':').map(Number);if(p.some(Number.isNaN))return 0;return p.reduce((a,b)=>a*60+b,0)}
-    function setMeter(id,v){$(id).style.width=Math.max(0,Math.min(100,Number(v)||0))+'%'}
-    function timestampUrl(video,time){const base=video?.watchUrl||$('url').value.trim();try{const u=new URL(base);u.searchParams.set('t',seconds(time)+'s');return u.toString()}catch{return base}}
-    function loading(on){$('submit').disabled=on;$('submit').textContent=on?'診断中...':'Geminiで診断する'}
-    function startProgress(){clearInterval(timer);$('error').textContent='';$('result').classList.remove('active');$('scanner').classList.add('active');$('scanner').scrollIntoView({behavior:'smooth',block:'center'});let p=0;timer=setInterval(()=>{p=Math.min(92,p+Math.floor(Math.random()*8)+4);$('progressBar').style.width=p+'%';$('progressNum').textContent=p+'%';$('scanMessage').textContent=p<30?'動画情報を確認しています':p<65?'冒頭30分を重点的に見ています':p<88?'話題と盛り上がりを整理しています':'配信カルテを作成しています'},420)}
-    function finishProgress(){clearInterval(timer);$('progressBar').style.width='100%';$('progressNum').textContent='100%';setTimeout(()=>{$('scanner').classList.remove('active');$('result').classList.add('active');$('result').scrollIntoView({behavior:'smooth',block:'start'})},260)}
-    function renderVideo(v){const card=$('videoCard');if(!v){card.classList.remove('active');return}const watch=v.watchUrl||$('url').value.trim();$('videoTitle').textContent=v.title||'YouTube動画';$('thumb').src=v.thumbnailUrl||`https://i.ytimg.com/vi/${v.videoId}/hqdefault.jpg`;$('thumb').alt=(v.title||'YouTube動画')+' のサムネイル';$('thumbLink').href=watch;$('openVideo').href=watch;card.classList.add('active')}
-    function render(d){latest=d;renderVideo(d.video);$('streamType').textContent=d.streamType;$('summary').textContent=d.summary;$('score').textContent=d.overallScore;$('ring').style.background=`conic-gradient(var(--mint) 0 ${d.overallScore}%,rgba(255,255,255,.09) ${d.overallScore}% 100%)`;$('talk').textContent=d.talkDensityScore;$('titleScore').textContent=d.titleMatchScore;$('start').textContent=d.mainTopicStartedAt;const sr=d.silenceRate;$('silence').textContent=sr==null?'未計測':Number(sr).toFixed(1);$('silenceUnit').textContent=sr==null?'':'%';setMeter('talkMeter',d.talkDensityScore);setMeter('titleMeter',d.titleMatchScore);setMeter('startMeter',Math.max(0,100-Math.min(100,seconds(d.mainTopicStartedAt)/18)));setMeter('silenceMeter',sr==null?0:sr);$('highlights').innerHTML='';d.highlights.forEach(x=>{const a=document.createElement('a');a.className='highlight';a.href=timestampUrl(d.video,x.start);a.target='_blank';a.rel='noopener noreferrer';a.innerHTML='<span class="time"></span><p><b></b><br><small></small></p><span class="tag"></span>';a.querySelector('.time').textContent=x.start;a.querySelector('b').textContent=x.title;a.querySelector('small').textContent=`${x.end}まで / ${x.reason}`;a.querySelector('.tag').textContent=x.tag;$('highlights').appendChild(a)});$('advice').innerHTML='';d.advice.forEach((x,i)=>{const row=document.createElement('div');row.className='advice';row.innerHTML='<span class="num"></span><p><b></b><br><small>次回配信で試せる改善提案です</small></p>';row.querySelector('.num').textContent=i+1;row.querySelector('b').textContent=x;$('advice').appendChild(row)});$('warnings').innerHTML='';d.warnings.forEach(x=>{const li=document.createElement('li');li.textContent=x;$('warnings').appendChild(li)});$('shareType').textContent=d.streamType;$('shareTalk').textContent=d.talkDensityScore;$('shareTitle').textContent=d.titleMatchScore;$('shareSilence').textContent=sr==null?'--':Number(sr).toFixed(1)+'%'}
-    $('form').addEventListener('submit',async e=>{e.preventDefault();const v=$('url').value.trim();if(!isYouTube(v)){$('error').textContent='公開YouTube動画のURLを入力してください。';$('url').focus();return}loading(true);startProgress();try{const r=await fetch(`${API}/api/analyze`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({youtubeUrl:v})});const body=await r.json().catch(()=>({}));if(!r.ok)throw new Error(body.detail||'Gemini APIで分析できませんでした。時間をおいてもう一度試してください。');render(body);finishProgress()}catch(err){clearInterval(timer);$('scanner').classList.remove('active');$('error').textContent=err.message||'Gemini APIで分析できませんでした。';window.scrollTo({top:0,behavior:'smooth'})}finally{loading(false)}});
-    $('demo').addEventListener('click',()=>{$('url').value='https://www.youtube.com/watch?v=dQw4w9WgXcQ';$('url').focus()});$('retry').addEventListener('click',()=>{$('result').classList.remove('active');$('url').value='';window.scrollTo({top:0,behavior:'smooth'});setTimeout(()=>$('url').focus(),350)});$('copy').addEventListener('click',async()=>{const d=latest;const text=d?`【配信カルテ】\n動画：${d.video?.title||'YouTube動画'}\nURL：${d.video?.watchUrl||$('url').value.trim()}\n配信タイプ：${d.streamType}\n総合スコア：${d.overallScore}点\nトーク密度：${d.talkDensityScore}点\nタイトル一致：${d.titleMatchScore}点\n本題開始：${d.mainTopicStartedAt}\n無言率：${d.silenceRate==null?'未計測':Number(d.silenceRate).toFixed(1)+'%'}\n改善提案：${d.advice[0]}`:'配信カルテの診断結果はまだありません。';try{await navigator.clipboard.writeText(text);$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),1800)}catch{alert(text)}});
+    const form = document.getElementById('diagnoseForm');
+    const input = document.getElementById('youtubeUrl');
+    const submitBtn = document.getElementById('submitBtn');
+    const errorText = document.getElementById('errorText');
+    const scanner = document.getElementById('scanner');
+    const results = document.getElementById('result');
+    const progressBar = document.getElementById('progressBar');
+    const progressNum = document.getElementById('progressNum');
+    const scanMessage = document.getElementById('scanMessage');
+    const steps = [...document.querySelectorAll('.scan-step')];
+    const toast = document.getElementById('toast');
+    const API_BASE_URL = (window.KARTE_API_BASE_URL || '').replace(/\/$/, '');
+    let selectedMode = 'standard';
+
+    const messages = [
+      '動画情報を確認しています',
+      '冒頭30分を重点的に見ています',
+      '話題と盛り上がりを整理しています',
+      '配信カルテを作成しています'
+    ];
+
+    function isYouTubeUrl(value) {
+      try {
+        const url = new URL(value);
+        return ['youtube.com', 'www.youtube.com', 'youtu.be', 'm.youtube.com'].includes(url.hostname);
+      } catch { return false; }
+    }
+
+    function setLoading(isLoading) {
+      submitBtn.disabled = isLoading;
+      submitBtn.textContent = isLoading ? '診断中...' : 'Geminiで診断する';
+    }
+
+    document.querySelectorAll('.mode-btn').forEach(button => {
+      button.addEventListener('click', () => {
+        selectedMode = button.dataset.mode || 'standard';
+        document.querySelectorAll('.mode-btn').forEach(item => item.classList.toggle('active', item === button));
+      });
+    });
+
+    function friendlyError(error, payload) {
+      const detail = payload?.detail || error?.message || '';
+      if (detail.includes('利用上限') || detail.toLowerCase().includes('quota') || detail.toLowerCase().includes('rate')) {
+        return 'Gemini APIの利用上限に近い可能性があります。少し待つか、軽量診断で再試行してください。';
+      }
+      if (detail.includes('長すぎ') || detail.includes('処理上限')) {
+        return '動画が長い、または重くて処理上限に当たった可能性があります。軽量診断で試してください。';
+      }
+      if (detail.includes('公開YouTube') || detail.includes('公開動画') || detail.includes('YouTube動画')) {
+        return '公開YouTube動画として読み込めませんでした。限定公開・年齢制限・地域制限がないか確認してください。';
+      }
+      if (detail.includes('GEMINI_API_KEY') || detail.includes('APIキー')) {
+        return 'Gemini APIキーの設定に問題があります。Renderの環境変数を確認してください。';
+      }
+      if (detail === 'Failed to fetch' || detail.toLowerCase().includes('failed to fetch')) {
+        return 'APIへ接続できませんでした。Renderの起動待ち、Cloudflareの反映待ち、または通信の一時エラーの可能性があります。';
+      }
+      return detail || 'Gemini APIで分析できませんでした。時間をおいてもう一度試してください。';
+    }
+
+    function startProgress() {
+      errorText.textContent = '';
+      results.classList.remove('active');
+      scanner.classList.add('active');
+      scanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      steps.forEach(step => step.classList.remove('done'));
+      progressBar.style.width = '0%';
+      progressNum.textContent = '0%';
+
+      let progress = 0;
+      const timer = setInterval(() => {
+        progress = Math.min(92, progress + Math.floor(Math.random() * 8) + 4);
+        const phase = Math.min(3, Math.floor(progress / 25));
+        scanMessage.textContent = messages[phase];
+        progressBar.style.width = progress + '%';
+        progressNum.textContent = progress + '%';
+        steps.forEach((step, index) => step.classList.toggle('done', index < phase));
+      }, 420);
+      return timer;
+    }
+
+    function finishProgress(timer) {
+      clearInterval(timer);
+      scanMessage.textContent = messages[3];
+      progressBar.style.width = '100%';
+      progressNum.textContent = '100%';
+      steps.forEach(step => step.classList.add('done'));
+      setTimeout(() => {
+        scanner.classList.remove('active');
+        results.classList.add('active');
+        results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 260);
+    }
+
+    function setMeter(id, value) {
+      const meter = document.getElementById(id);
+      meter.style.width = Math.max(0, Math.min(100, Number(value) || 0)) + '%';
+    }
+
+    function parseTimeToSeconds(value) {
+      const parts = String(value || '').split(':').map(Number);
+      if (parts.some(Number.isNaN)) return 0;
+      return parts.reduce((total, part) => total * 60 + part, 0);
+    }
+
+    function buildTimestampUrl(video, timeText) {
+      const base = video?.watchUrl || input.value.trim();
+      const seconds = parseTimeToSeconds(timeText);
+      try {
+        const url = new URL(base);
+        url.searchParams.set('t', `${seconds}s`);
+        return url.toString();
+      } catch {
+        return base;
+      }
+    }
+
+    function renderVideoEmbed(video) {
+      const card = document.getElementById('videoEmbed');
+      if (!video) {
+        card.classList.remove('active');
+        return;
+      }
+      const title = video.title || 'YouTube動画';
+      const watchUrl = video.watchUrl || input.value.trim();
+      document.getElementById('videoTitle').textContent = title;
+      document.getElementById('videoThumb').src = video.thumbnailUrl || `https://i.ytimg.com/vi/${video.videoId}/hqdefault.jpg`;
+      document.getElementById('videoThumb').alt = `${title} のサムネイル`;
+      document.getElementById('videoThumbLink').href = watchUrl;
+      document.getElementById('videoOpenLink').href = watchUrl;
+      card.classList.add('active');
+    }
+
+    function renderAnalysis(data) {
+      renderVideoEmbed(data.video);
+      document.getElementById('streamType').textContent = data.streamType;
+      document.getElementById('summaryText').textContent = data.summary;
+      document.getElementById('overallScore').textContent = data.overallScore;
+      document.getElementById('scoreRing').style.background = `conic-gradient(var(--mint) 0 ${data.overallScore}%, rgba(255,255,255,.08) ${data.overallScore}% 100%)`;
+      document.getElementById('scoreRing').setAttribute('aria-label', `総合スコア${data.overallScore}点`);
+      document.getElementById('talkDensityScore').textContent = data.talkDensityScore;
+      document.getElementById('titleMatchScore').textContent = data.titleMatchScore;
+      document.getElementById('mainTopicStartedAt').textContent = data.mainTopicStartedAt;
+      const silenceRate = data.silenceRate;
+      document.getElementById('silenceRate').textContent = silenceRate == null ? '未計測' : Number(silenceRate).toFixed(1);
+      document.getElementById('silenceUnit').textContent = silenceRate == null ? '' : '%';
+      setMeter('talkDensityMeter', data.talkDensityScore);
+      setMeter('titleMatchMeter', data.titleMatchScore);
+      setMeter('introMeter', Math.max(0, 100 - Math.min(100, parseTimeToSeconds(data.mainTopicStartedAt) / 18)));
+      setMeter('silenceMeter', silenceRate == null ? 0 : Math.min(100, Number(silenceRate)));
+
+      renderTextList('goodPointList', data.goodPoints);
+      renderTextList('dropOffList', data.dropOffPoints);
+      renderTextList('nextActionList', data.nextActions || data.advice);
+
+      const highlights = document.getElementById('highlightList');
+      highlights.innerHTML = '';
+      data.highlights.forEach(item => {
+        const row = document.createElement('a');
+        row.className = 'highlight';
+        row.href = buildTimestampUrl(data.video, item.start);
+        row.target = '_blank';
+        row.rel = 'noopener noreferrer';
+        row.title = 'YouTubeでこの時間を開く';
+        row.innerHTML = `<span class="time"></span><p><b></b><br><small></small></p><span class="tag"></span>`;
+        row.querySelector('.time').textContent = item.start;
+        row.querySelector('b').textContent = item.title;
+        row.querySelector('small').textContent = `${item.end}まで / ${item.reason}`;
+        row.querySelector('.tag').textContent = item.tag;
+        highlights.appendChild(row);
+      });
+
+      const advice = document.getElementById('adviceList');
+      advice.innerHTML = '';
+      data.advice.forEach((text, index) => {
+        const row = document.createElement('div');
+        row.className = 'advice';
+        row.innerHTML = `<span class="priority"></span><p><b></b><br><small>次回配信で試せる改善提案です</small></p>`;
+        row.querySelector('.priority').textContent = index + 1;
+        row.querySelector('b').textContent = text;
+        advice.appendChild(row);
+      });
+
+      const warnings = document.getElementById('warningList');
+      warnings.innerHTML = '';
+      data.warnings.forEach(text => {
+        const item = document.createElement('li');
+        item.textContent = text;
+        warnings.appendChild(item);
+      });
+
+      document.getElementById('shareType').textContent = data.streamType;
+      document.getElementById('shareTalk').textContent = data.talkDensityScore;
+      document.getElementById('shareTitle').textContent = data.titleMatchScore;
+      document.getElementById('shareSilence').textContent = silenceRate == null ? '--' : `${Number(silenceRate).toFixed(1)}%`;
+      window.latestAnalysis = data;
+    }
+
+    function renderTextList(id, items) {
+      const list = document.getElementById(id);
+      list.innerHTML = '';
+      (items || []).slice(0, 3).forEach(text => {
+        const item = document.createElement('li');
+        item.textContent = text;
+        list.appendChild(item);
+      });
+    }
+
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      const value = input.value.trim();
+      if (!isYouTubeUrl(value)) {
+        errorText.textContent = '公開YouTube動画のURLを入力してください。';
+        input.focus();
+        return;
+      }
+      setLoading(true);
+      const timer = startProgress();
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/analyze`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ youtubeUrl: value, analysisMode: selectedMode })
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(friendlyError(null, payload));
+        }
+        renderAnalysis(payload);
+        finishProgress(timer);
+      } catch (error) {
+        clearInterval(timer);
+        scanner.classList.remove('active');
+        errorText.textContent = friendlyError(error);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    document.getElementById('demoLink').addEventListener('click', () => {
+      input.value = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
+      input.focus();
+    });
+    document.getElementById('demoTop').addEventListener('click', () => {
+      input.value = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
+      input.focus();
+    });
+    document.getElementById('retryBtn').addEventListener('click', () => {
+      results.classList.remove('active');
+      input.value = '';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setTimeout(() => input.focus(), 450);
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', async () => {
+      const data = window.latestAnalysis;
+      const text = data
+        ? `【配信カルテ】\n動画：${data.video?.title || 'YouTube動画'}\nURL：${data.video?.watchUrl || input.value.trim()}\n配信タイプ：${data.streamType}\n総合スコア：${data.overallScore}点\nトーク密度（Gemini推定）：${data.talkDensityScore}点\nタイトル一致（Gemini推定）：${data.titleMatchScore}点\n本題開始（Gemini推定）：${data.mainTopicStartedAt}\n無言率（簡易音声解析）：${data.silenceRate == null ? '未計測' : `${Number(data.silenceRate).toFixed(1)}%`}\n\n改善提案：${data.advice[0]}`
+        : '配信カルテの診断結果はまだありません。';
+      try {
+        await navigator.clipboard.writeText(text);
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 1800);
+      } catch {
+        alert(text);
+      }
+    });
   </script>
 </body>
 </html>
