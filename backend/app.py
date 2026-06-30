@@ -62,6 +62,8 @@ class VideoInfo(BaseModel):
     thumbnailUrl: str
     watchUrl: str
     embedUrl: str
+    durationSeconds: Optional[int] = None
+    durationText: Optional[str] = None
 
 
 class AnalysisResult(BaseModel):
@@ -169,6 +171,7 @@ def get_video_info(youtube_url: str) -> VideoInfo:
     watch_url = canonical_youtube_url(video_id) if video_id else youtube_url
     thumbnail_url = f"https://i.ytimg.com/vi/{video_id}/hqdefault.jpg" if video_id else ""
     title = "YouTube動画"
+    duration_seconds = None
 
     try:
         import yt_dlp
@@ -186,6 +189,9 @@ def get_video_info(youtube_url: str) -> VideoInfo:
         thumbnail_url = info.get("thumbnail") or thumbnail_url
         video_id = info.get("id") or video_id
         watch_url = canonical_youtube_url(video_id) if video_id else watch_url
+        duration = info.get("duration")
+        if isinstance(duration, (int, float)) and duration > 0:
+            duration_seconds = int(duration)
     except Exception:
         pass
 
@@ -195,6 +201,8 @@ def get_video_info(youtube_url: str) -> VideoInfo:
         thumbnailUrl=thumbnail_url,
         watchUrl=watch_url,
         embedUrl=f"https://www.youtube.com/embed/{video_id}" if video_id else "",
+        durationSeconds=duration_seconds,
+        durationText=format_seconds(duration_seconds) if duration_seconds else None,
     )
 
 
