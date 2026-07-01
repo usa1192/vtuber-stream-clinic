@@ -326,7 +326,7 @@
     <section class="hero wrap" id="how">
       <div class="eyebrow">● VTuber配信を、感覚ではなくデータで改善</div>
       <h1><span class="gradient-text">その配信、どこで伸びて<br>どこで離脱されてる？</span></h1>
-      <p class="lead">公開YouTube動画のURLを入力すると、Geminiが冒頭30分を重点的に確認し、難しい場合は範囲を短縮しながら、トーク密度の参考点・OP終了の推定・タイトル一致度・切り抜き候補をカルテ形式で見える化します。</p>
+      <p class="lead">公開YouTube動画のURLを入力すると、Geminiが冒頭30分を重点的に確認し、難しい場合は範囲を短縮しながら、トーク密度の参考点・OP終了・本編開始の推定・タイトル一致度・切り抜き候補をカルテ形式で見える化します。</p>
 
       <form class="diagnose-box" id="diagnoseForm">
         <label for="youtubeUrl" style="position:absolute;left:-9999px">YouTubeアーカイブURL</label>
@@ -402,6 +402,7 @@
       <div class="metrics">
         <div class="metric"><div class="metric-name">トーク密度（Gemini推定）</div><div class="metric-value"><span id="talkDensityScore">--</span><small>点</small></div><div class="meter"><span id="talkDensityMeter" style="width:0%"></span></div></div>
         <div class="metric"><div class="metric-name">OP終了（Gemini推定）</div><div class="metric-value"><span id="mainTopicStartedAt">--:--</span></div><div class="meter"><span id="introMeter" style="width:0%;background:linear-gradient(90deg,var(--red),var(--yellow))"></span></div></div>
+        <div class="metric"><div class="metric-name">本編開始（Gemini推定）</div><div class="metric-value"><span id="mainContentStartedAt">--:--</span></div><div class="meter"><span id="mainContentMeter" style="width:0%;background:linear-gradient(90deg,var(--yellow),var(--mint))"></span></div></div>
         <div class="metric"><div class="metric-name">タイトル一致（Gemini推定）</div><div class="metric-value"><span id="titleMatchScore">--</span><small>点</small></div><div class="meter"><span id="titleMatchMeter" style="width:0%"></span></div></div>
       </div>
 
@@ -599,7 +600,8 @@
         ])
       );
       const mainStart = parseTimeToSeconds(data.mainTopicStartedAt);
-      return Math.max(7200, highlightMax + 600, mainStart + 1800);
+      const contentStart = parseTimeToSeconds(data.mainContentStartedAt);
+      return Math.max(7200, highlightMax + 600, mainStart + 1800, contentStart + 1800);
     }
 
     function renderTimelineLabels(durationSeconds, hasMeasuredDuration) {
@@ -725,9 +727,12 @@
       document.getElementById('talkDensityScore').textContent = data.talkDensityScore;
       document.getElementById('titleMatchScore').textContent = data.titleMatchScore;
       document.getElementById('mainTopicStartedAt').textContent = data.mainTopicStartedAt;
+      const mainContentStartedAt = data.mainContentStartedAt || data.mainTopicStartedAt;
+      document.getElementById('mainContentStartedAt').textContent = mainContentStartedAt;
       setMeter('talkDensityMeter', data.talkDensityScore);
       setMeter('titleMatchMeter', data.titleMatchScore);
       setMeter('introMeter', Math.max(0, 100 - Math.min(100, parseTimeToSeconds(data.mainTopicStartedAt) / 18)));
+      setMeter('mainContentMeter', Math.max(0, 100 - Math.min(100, parseTimeToSeconds(mainContentStartedAt) / 36)));
 
       renderTextList('goodPointList', data.goodPoints);
       renderTextList('dropOffList', data.dropOffPoints);
@@ -837,7 +842,7 @@
     document.getElementById('copyBtn').addEventListener('click', async () => {
       const data = window.latestAnalysis;
       const text = data
-        ? `【配信カルテ】\n動画：${data.video?.title || 'YouTube動画'}\nURL：${data.video?.watchUrl || input.value.trim()}\n配信タイプ：${data.streamType}\n総合スコア：${data.overallScore}点\nトーク密度（Gemini推定）：${data.talkDensityScore}点\nタイトル一致（Gemini推定）：${data.titleMatchScore}点\nOP終了（Gemini推定）：${data.mainTopicStartedAt}\n\n改善提案：${data.advice[0]}`
+        ? `【配信カルテ】\n動画：${data.video?.title || 'YouTube動画'}\nURL：${data.video?.watchUrl || input.value.trim()}\n配信タイプ：${data.streamType}\n総合スコア：${data.overallScore}点\nトーク密度（Gemini推定）：${data.talkDensityScore}点\nタイトル一致（Gemini推定）：${data.titleMatchScore}点\nOP終了（Gemini推定）：${data.mainTopicStartedAt}\n本編開始（Gemini推定）：${data.mainContentStartedAt || data.mainTopicStartedAt}\n\n改善提案：${data.advice[0]}`
         : '配信カルテの診断結果はまだありません。';
       try {
         await navigator.clipboard.writeText(text);
